@@ -32,14 +32,25 @@ class LeetCodeRankingUpload:
     def run(self) -> None:
         rankings_from_github: List[Ranking] = self.get_rankings_from_github()
         ranking_from_leetcode: Ranking = Ranking(dateutils.get_epoch_ms(), self.leetcode_service.get_ranking("eunsour"))
-        latest_rankings: List[Ranking] = rankings_from_github + [ranking_from_leetcode]
 
-        issue_title = f"LeetCode Ranking - {dateutils.get_kst_today()}"
-        upload_contents = f"LeetCode Ranking : {format(ranking_from_leetcode.ranking, ',')}등"
+        previous_rank, new_rank = rankings_from_github[-1].ranking, ranking_from_leetcode.ranking
+        info(f"previous ranking: {previous_rank}, new ranking: {new_rank}")
 
-        repo = self.github_service.get_github_repo("leetcode")
-        self.upload_rankings_csv(latest_rankings)
-        self.github_service.upload_github_issue(repo, issue_title, upload_contents)
+        if previous_rank != new_rank:
+            info("Rank changed!")
+            latest_rankings: List[Ranking] = rankings_from_github + [ranking_from_leetcode]
+
+            issue_title = f"LeetCode Ranking - {dateutils.get_kst_today()}"
+            upload_contents = f"LeetCode Ranking : {format(ranking_from_leetcode.ranking, ',')}등"
+
+            repo = self.github_service.get_github_repo("leetcode")
+            self.upload_rankings_csv(latest_rankings)
+            self.github_service.upload_github_issue(repo, issue_title, upload_contents)
+
+        else:
+            info("Rank not changed!")
+
+        info("Ranking Upload Task finished")
 
     def get_rankings_from_github(self) -> List[Ranking]:
         content: bytes = self.github_service.get_raw_content(
