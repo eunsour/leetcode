@@ -9,7 +9,7 @@ from service.leetcode import LeetCodeService
 from service.github import GitHubService
 
 
-GITHUB_API_TOKEN = "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"
+GITHUB_API_TOKEN = os.environ["MY_GITHUB_TOKEN"]
 GITHUB_API_RAW_BASE_URL = "https://raw.githubusercontent.com"
 LEETCODE_RANKING_CSV_PATH = "outputs/leetcode_ranking.csv"
 
