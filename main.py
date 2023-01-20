@@ -2,7 +2,6 @@ import os
 import base64
 
 from typing import List
-
 from utils import dateutils
 from utils.logger import info
 from service.leetcode import LeetCodeService
@@ -10,9 +9,6 @@ from service.github import GitHubService
 
 
 GITHUB_API_TOKEN = os.environ["MY_GITHUB_TOKEN"]
-GITHUB_API_RAW_BASE_URL = "https://raw.githubusercontent.com"
-LEETCODE_RANKING_CSV_PATH = "outputs/leetcode_ranking.csv"
-
 
 class Ranking:
     def __init__(self, epoch_ms: int, ranking: int) -> None:
@@ -27,7 +23,8 @@ class LeetCodeRankingUpload:
     def __init__(self) -> None:
         self.github_service = GitHubService(GITHUB_API_TOKEN)
         self.leetcode_service = LeetCodeService()
-        self.LEETCODE_RANKING_CSV_PATH = "analysis/output/leetcode_rankings.csv"
+        self.LEETCODE_RANKING_CSV_PATH = "outputs/leetcode_ranking.csv"
+        self.LEETCODE_RANKING_GRAPH_PATH = 'outputs/ranking_graph.png'
 
     def run(self) -> None:
         rankings_from_github: List[Ranking] = self.get_rankings_from_github()
@@ -40,7 +37,7 @@ class LeetCodeRankingUpload:
             info("Rank changed!")
             latest_rankings: List[Ranking] = rankings_from_github + [ranking_from_leetcode]
 
-            issue_title = f"LeetCode Ranking - {dateutils.get_kst_today()}"
+            issue_title = f"LeetCode Ranking Changed - {dateutils.get_kst_today()}"
             upload_contents = f"LeetCode Ranking : {format(ranking_from_leetcode.ranking, ',')}등"
 
             repo = self.github_service.get_github_repo("leetcode")
@@ -56,7 +53,7 @@ class LeetCodeRankingUpload:
         content: bytes = self.github_service.get_raw_content(
             owner="eunsour",
             repo="leetcode",
-            file_path=LEETCODE_RANKING_CSV_PATH,
+            file_path=self.LEETCODE_RANKING_CSV_PATH,
             branch="master",
         )
         return [
@@ -68,7 +65,7 @@ class LeetCodeRankingUpload:
         return self.github_service.upload_file(
             owner="eunsour",
             repo="leetcode",
-            file_path=LEETCODE_RANKING_CSV_PATH,
+            file_path=self.LEETCODE_RANKING_CSV_PATH,
             base64content=base64.b64encode(
                 "\n".join(map(lambda x: f"{x.epoch_ms},{x.ranking}", sorted_rankings)).encode(encoding="ascii")
             ).decode("ascii"),
@@ -77,4 +74,3 @@ class LeetCodeRankingUpload:
 
 if __name__ == "__main__":
     LeetCodeRankingUpload().run()
-    info("Upload Github Issue Success!")

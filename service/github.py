@@ -9,7 +9,6 @@ class GitHubService:
     def __init__(self, github_api_token: str) -> None:
         self.github_api_token = github_api_token
         self.GITHUB_API_BASE_URL = "https://api.github.com"
-        self.GITHUB_LEETCODE_PATH = "repos/eunsour/leetcode/contents"
         self.GITHUB_API_RAW_BASE_URL = "https://raw.githubusercontent.com"
 
     def get_sha(self, file_url: str) -> str:
